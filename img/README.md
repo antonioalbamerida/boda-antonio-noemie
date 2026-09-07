@@ -8,8 +8,8 @@ queda con el fondo crema y la galería entera se oculta si no hay ninguna foto).
 
 | Archivo | Dónde aparece | Tamaño recomendado |
 |---|---|---|
-| `portada.jpg` | Fondo de la cabecera, detrás de "Antonio & Noémie" | 2000 × 1300 px, horizontal |
-| `galeria-1.jpg` … `galeria-6.jpg` | Rejilla de la sección "Nuestra historia en fotos" | 1200 × 1200 px, cuadradas |
+| `portada.jpg` (o `.jpeg`/`.png`/`.webp`) | Fondo de la cabecera, detrás de "Antonio & Noémie" | 2000 × 1300 px, horizontal |
+| `galeria-1.jpg` … `galeria-6.jpg` (misma libertad de extensión) | Rejilla de la sección "Nuestra historia en fotos" | 1200 × 1200 px, cuadradas |
 
 Las fotos de la galería se recortan a cuadrado desde el centro (`object-fit:
 cover`), así que conviene que la cara o el motivo principal esté centrado.
@@ -19,9 +19,13 @@ cover`), así que conviene que la cara o el motivo principal esté centrado.
 - **Peso**: mantén cada archivo por debajo de ~400 KB. Una foto de móvil sin
   comprimir pesa 4-8 MB y hace que la web tarde en cargar en 4G.
   Para comprimir: [squoosh.app](https://squoosh.app) (calidad JPEG 75-80).
-- **Formato**: `.jpg` para fotos. Si prefieres `.webp` o `.png`, cambia la
-  extensión en las constantes `FOTO_PORTADA` y `FOTOS_GALERIA` que están al
-  principio del `<script>` de `boda_antonio_noemie.html`.
+- **Formato**: da igual la extensión. La web prueba `.jpg`, `.jpeg`, `.png` y
+  `.webp` (también en mayúsculas, y dobles extensiones tipo `portada.jpg.jpeg`)
+  hasta encontrar el archivo. Lo que sí tiene que coincidir es el **nombre**:
+  `portada`, `galeria-1`, `galeria-2`…
+- **Claro u oscuro**: la web mide el brillo medio de la portada. Si es una foto
+  oscura pone un velo oscuro y el texto en blanco; si es clara (una ilustración,
+  por ejemplo) pone un velo claro y el texto en su color oscuro habitual.
 - **Portada**: elige una foto donde el centro tenga espacio libre; encima va el
   nombre y la fecha, sobre un velo oscuro que garantiza la legibilidad.
 - **Más o menos fotos**: añade o quita entradas en el array `FOTOS_GALERIA`.
