@@ -55,9 +55,32 @@
             border-bottom: none;
             background-image:
                 linear-gradient(rgba(35, 30, 24, 0.45), rgba(35, 30, 24, 0.55)),
-                url('img/portada.jpg');
+                var(--hero-img);
             background-size: cover;
             background-position: center;
+        }
+
+        /* Imagen clara (ilustracion o foto luminosa): velo claro y texto oscuro,
+           que es lo legible ahi. Lo decide el JS midiendo el brillo medio. */
+        header.has-hero.hero-claro {
+            background-image:
+                linear-gradient(rgba(250, 247, 242, 0.55), rgba(250, 247, 242, 0.62)),
+                var(--hero-img);
+        }
+
+        header.has-hero.hero-claro h1,
+        header.has-hero.hero-claro .date-location {
+            color: #2c2c2a;
+            text-shadow: 0 1px 10px rgba(250, 247, 242, 0.9);
+        }
+
+        header.has-hero.hero-claro .subtitle {
+            color: #8b7355;
+            text-shadow: 0 1px 10px rgba(250, 247, 242, 0.9);
+        }
+
+        header.has-hero.hero-claro .divider {
+            background: #8b7355;
         }
 
         header.has-hero h1,
@@ -584,15 +607,25 @@
         // queda con el fondo crema y la galeria se oculta entera si no hay
         // ninguna foto. Ver img/README.md para nombres y tamanos.
         // ---------------------------------------------------------------
-        const FOTO_PORTADA = 'img/portada.jpg';
+        // Los nombres van SIN extension: se prueban las de EXTENSIONES en orden
+        // hasta encontrar el archivo, asi da igual haber subido .jpg, .jpeg,
+        // .png o .webp (incluidas las dobles extensiones tipo portada.jpg.jpeg
+        // que deja el navegador al renombrar al subir).
+        const FOTO_PORTADA = 'img/portada';
+
+        const EXTENSIONES = [
+            '.jpg', '.jpeg', '.png', '.webp',
+            '.JPG', '.JPEG', '.PNG', '.WEBP',
+            '.jpg.jpeg', '.jpg.png', '.jpg.webp', '.jpeg.jpg'
+        ];
 
         const FOTOS_GALERIA = [
-            { archivo: 'img/galeria-1.jpg', alt: { es: 'Antonio y Noémie', fr: 'Antonio et Noémie' } },
-            { archivo: 'img/galeria-2.jpg', alt: { es: 'Antonio y Noémie', fr: 'Antonio et Noémie' } },
-            { archivo: 'img/galeria-3.jpg', alt: { es: 'Antonio y Noémie', fr: 'Antonio et Noémie' } },
-            { archivo: 'img/galeria-4.jpg', alt: { es: 'Parroquia de San Francisco', fr: 'Paroisse de San Francisco' } },
-            { archivo: 'img/galeria-5.jpg', alt: { es: 'Castillo de San Marcos', fr: 'Château de San Marcos' } },
-            { archivo: 'img/galeria-6.jpg', alt: { es: 'El Puerto de Santa María', fr: 'El Puerto de Santa María' } }
+            { archivo: 'img/galeria-1', alt: { es: 'Antonio y Noémie', fr: 'Antonio et Noémie' } },
+            { archivo: 'img/galeria-2', alt: { es: 'Antonio y Noémie', fr: 'Antonio et Noémie' } },
+            { archivo: 'img/galeria-3', alt: { es: 'Antonio y Noémie', fr: 'Antonio et Noémie' } },
+            { archivo: 'img/galeria-4', alt: { es: 'Parroquia de San Francisco', fr: 'Paroisse de San Francisco' } },
+            { archivo: 'img/galeria-5', alt: { es: 'Castillo de San Marcos', fr: 'Château de San Marcos' } },
+            { archivo: 'img/galeria-6', alt: { es: 'El Puerto de Santa María', fr: 'El Puerto de Santa María' } }
         ];
 
         const textos = {
@@ -712,13 +745,73 @@
             actualizarAltGaleria();
         }
 
+        // ---------------- RESOLUCION DE RUTAS ----------------
+        // Devuelve la primera ruta que carga (base + extension) o null.
+        function resolverImagen(base) {
+            return new Promise(resolve => {
+                let i = 0;
+                const intentar = () => {
+                    if (i >= EXTENSIONES.length) {
+                        resolve(null);
+                        return;
+                    }
+                    const ruta = base + EXTENSIONES[i++];
+                    const prueba = new Image();
+                    prueba.onload = () => resolve(ruta);
+                    prueba.onerror = intentar;
+                    prueba.src = ruta;
+                };
+                intentar();
+            });
+        }
+
         // ---------------- PORTADA ----------------
         // Solo se activa el fondo (y el texto en blanco) si la imagen carga.
         function cargarPortada() {
             const cabecera = document.querySelector('header');
-            const prueba = new Image();
-            prueba.onload = () => cabecera.classList.add('has-hero');
-            prueba.src = FOTO_PORTADA;
+            resolverImagen(FOTO_PORTADA).then(ruta => {
+                if (!ruta) {
+                    console.info('Sin foto de portada: no se encontró ' + FOTO_PORTADA + '.jpg');
+                    return;
+                }
+                cabecera.style.setProperty('--hero-img', "url('" + ruta + "')");
+                cabecera.classList.add('has-hero');
+
+                medirBrillo(ruta).then(brillo => {
+                    // Umbral 0.62: por encima la imagen es clara y el texto
+                    // blanco no se leeria, asi que se invierte el tratamiento.
+                    if (brillo !== null && brillo > 0.62) cabecera.classList.add('hero-claro');
+                });
+            });
+        }
+
+        // Brillo medio (0 = negro, 1 = blanco) de una imagen del mismo origen.
+        // Devuelve null si el navegador no deja leer el canvas (p. ej. al abrir
+        // el archivo con file:// en local); ahi se queda el velo oscuro.
+        function medirBrillo(ruta) {
+            return new Promise(resolve => {
+                const img = new Image();
+                img.onload = () => {
+                    try {
+                        const lienzo = document.createElement('canvas');
+                        lienzo.width = 32;
+                        lienzo.height = 32;
+                        const ctx = lienzo.getContext('2d');
+                        ctx.drawImage(img, 0, 0, 32, 32);
+                        const datos = ctx.getImageData(0, 0, 32, 32).data;
+
+                        let suma = 0;
+                        for (let i = 0; i < datos.length; i += 4) {
+                            suma += (0.2126 * datos[i] + 0.7152 * datos[i + 1] + 0.0722 * datos[i + 2]) / 255;
+                        }
+                        resolve(suma / (datos.length / 4));
+                    } catch (e) {
+                        resolve(null);
+                    }
+                };
+                img.onerror = () => resolve(null);
+                img.src = ruta;
+            });
         }
 
         // ---------------- GALERIA ----------------
@@ -726,12 +819,9 @@
         let fotoActual = 0;
 
         function cargarGaleria() {
-            const comprobaciones = FOTOS_GALERIA.map(foto => new Promise(resolve => {
-                const prueba = new Image();
-                prueba.onload = () => resolve(foto);
-                prueba.onerror = () => resolve(null);
-                prueba.src = foto.archivo;
-            }));
+            const comprobaciones = FOTOS_GALERIA.map(foto =>
+                resolverImagen(foto.archivo).then(ruta => ruta ? Object.assign({}, foto, { archivo: ruta }) : null)
+            );
 
             Promise.all(comprobaciones).then(resultados => {
                 fotosVisibles = resultados.filter(Boolean);
