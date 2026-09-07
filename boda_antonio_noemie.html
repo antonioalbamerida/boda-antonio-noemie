@@ -502,6 +502,31 @@
             }
         };
 
+        // Mensajes de feedback del formulario (validacion y envio)
+        const mensajes = {
+            es: {
+                faltaNombre: 'Por favor, ingresa tu nombre.',
+                emailInvalido: 'Por favor, ingresa un email válido.',
+                faltaAsistencia: 'Por favor, indica si asistirás.',
+                errorEnvio: 'Hubo un error al enviar. Por favor, intenta de nuevo.',
+                sinConexion: 'Parece que no tienes conexión a internet. Comprueba la conexión e inténtalo de nuevo.',
+                errorServidor: 'No hemos podido registrar tu confirmación. Inténtalo de nuevo en unos minutos o escríbenos directamente.'
+            },
+            fr: {
+                faltaNombre: 'Veuillez saisir votre nom.',
+                emailInvalido: 'Veuillez saisir un email valide.',
+                faltaAsistencia: 'Veuillez indiquer si vous serez présent(e).',
+                errorEnvio: "Une erreur s'est produite lors de l'envoi. Veuillez réessayer.",
+                sinConexion: "Vous semblez ne pas avoir de connexion internet. Vérifiez votre connexion et réessayez.",
+                errorServidor: "Nous n'avons pas pu enregistrer votre confirmation. Réessayez dans quelques minutes ou écrivez-nous directement."
+            }
+        };
+
+        function msg(clave) {
+            const dic = mensajes[idiomaActual] || mensajes.es;
+            return dic[clave] || mensajes.es[clave];
+        }
+
         let idiomaActual = 'es';
 
         function switchLang(lang) {
@@ -598,17 +623,17 @@
 
             // Validaciones
             if (!nombre) {
-                showError('Por favor, ingresa tu nombre.');
+                showError(msg('faltaNombre'));
                 return;
             }
 
             if (!email || !validateEmail(email)) {
-                showError('Por favor, ingresa un email válido.');
+                showError(msg('emailInvalido'));
                 return;
             }
 
             if (!asistencia) {
-                showError('Por favor, indica si asistirás.');
+                showError(msg('faltaAsistencia'));
                 return;
             }
 
@@ -647,34 +672,73 @@
             console.log("RSVP Data:", formData);
 
             // Mostrar indicador de carga
-            document.getElementById('btn-submit').disabled = true;
+            const btnSubmit = document.getElementById('btn-submit');
+            btnSubmit.disabled = true;
             document.getElementById('loading').classList.add('show');
 
             // URL de Google Apps Script
             const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQ5KraRJP3wMazm-C5bcVXXFL0-pEaalRAxH52sV8HjoqyQcZws6OTrlzC4uZzXPKdnA/exec';
+            const TIMEOUT_MS = 20000;
 
-            fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            })
-            .then(res => {
+            function finalizarEnvio(ok, claveMensaje) {
                 document.getElementById('loading').classList.remove('show');
-                document.getElementById('btn-submit').disabled = false;
+                btnSubmit.disabled = false;
 
-                if (res.ok || res.status === 200) {
+                if (ok) {
                     document.getElementById('formRSVP').style.display = 'none';
                     document.getElementById('successMsg').classList.add('show');
                 } else {
-                    showError('Hubo un error al enviar. Por favor, intenta de nuevo.');
+                    showError(msg(claveMensaje));
                 }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                document.getElementById('loading').classList.remove('show');
-                document.getElementById('btn-submit').disabled = false;
-                showError('Error de conexión. Por favor, verifica tu conexión a internet e intenta de nuevo.');
-            });
+            }
+
+            function enviar(opcionesExtra) {
+                // Content-Type 'text/plain' mantiene la peticion dentro de las
+                // "simple requests" de CORS y evita el preflight OPTIONS, que las
+                // Web Apps de Google Apps Script no saben responder. El script
+                // recibe el JSON igualmente en e.postData.contents.
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+                const opciones = Object.assign({
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(formData),
+                    redirect: 'follow',
+                    signal: controller.signal
+                }, opcionesExtra || {});
+
+                return fetch(SCRIPT_URL, opciones)
+                    .finally(() => clearTimeout(timeoutId));
+            }
+
+            enviar()
+                .then(res => {
+                    if (res.ok) {
+                        finalizarEnvio(true);
+                    } else {
+                        console.error('Respuesta no OK del servidor:', res.status);
+                        finalizarEnvio(false, 'errorServidor');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error en el envío principal:', err);
+
+                    if (navigator.onLine === false) {
+                        finalizarEnvio(false, 'sinConexion');
+                        return;
+                    }
+
+                    // Reintento en modo no-cors: el navegador envía la petición y el
+                    // servidor guarda los datos, pero la respuesta es opaca (no se
+                    // puede leer el status), así que se asume registrada.
+                    return enviar({ mode: 'no-cors' })
+                        .then(() => finalizarEnvio(true))
+                        .catch(err2 => {
+                            console.error('Error en el reintento no-cors:', err2);
+                            finalizarEnvio(false, 'errorServidor');
+                        });
+                });
         }
     </script>
 </body>
