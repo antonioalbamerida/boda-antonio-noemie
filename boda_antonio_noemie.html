@@ -51,13 +51,18 @@
         /* La clase .has-hero solo se anade por JS si img/portada.jpg existe,
            asi la cabecera nunca queda con texto blanco sobre fondo claro. */
         header.has-hero {
-            padding: 150px 20px 130px;
+            min-height: 480px;
+            padding: 40px 20px;
             border-bottom: none;
             background-image:
                 linear-gradient(rgba(35, 30, 24, 0.45), rgba(35, 30, 24, 0.55)),
                 var(--hero-img);
             background-size: cover;
             background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
         }
 
         /* Imagen clara (ilustracion o foto luminosa): velo claro y texto oscuro,
