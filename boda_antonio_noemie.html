@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antonio & Noémie — 10 de julio de 2027</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Garamond', 'Georgia', serif;
+            background: #faf7f2;
+            color: #3d3d3a;
+            line-height: 1.8;
+        }
+        .lang-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+        }
+        .lang-toggle button {
+            padding: 8px 14px;
+            border: 1px solid #bbb;
+            background: white;
+            color: #3d3d3a;
+            cursor: pointer;
+            border-radius: 3px;
+            font-size: 13px;
+            font-family: 'Garamond', serif;
+            transition: all 0.2s;
+        }
+        .lang-toggle button.active {
+            background: #3d3d3a;
+            color: white;
+            border-color: #3d3d3a;
+        }
+        .lang-toggle button:hover {
+            border-color: #3d3d3a;
+        }
+        
+        header {
+            background: #faf7f2;
+            padding: 60px 20px 80px;
+            text-align: center;
+            border-bottom: 1px solid #e5ddd2;
+        }
+        
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: #8b7355;
+            margin: 20px auto;
+        }
+        
+        h1 {
+            font-size: 56px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            color: #2c2c2a;
+        }
+        
+        .subtitle {
+            font-size: 18px;
+            font-weight: 300;
+            color: #8b7355;
+            margin-bottom: 30px;
+            font-style: italic;
+        }
+        
+        .date-location {
+            font-size: 16px;
+            color: #5f5e5a;
+            letter-spacing: 1px;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        section {
+            margin: 80px auto;
+            padding: 60px 40px;
+            background: white;
+            border: 1px solid #e5ddd2;
+            position: relative;
+        }
+        
+        section h2 {
+            font-size: 32px;
+            font-weight: 300;
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2c2c2a;
+            position: relative;
+            padding-bottom: 20px;
+        }
+        
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 1px;
+            background: #8b7355;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin: 40px 0;
+        }
+        
+        .info-box {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .info-box .label {
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: #8b7355;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
+        .info-box .value {
+            font-size: 16px;
+            color: #3d3d3a;
+            line-height: 1.6;
+        }
+        
+        form {
+            display: grid;
+            gap: 25px;
+            margin-top: 30px;
+        }
+        
+        .form-group {
+            display: grid;
+            gap: 8px;
+        }
+        
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #3d3d3a;
+            letter-spacing: 0.5px;
+        }
+        
+        input, textarea, select {
+            padding: 12px 14px;
+            border: 1px solid #ddd;
+            background: #faf7f2;
+            font-family: 'Garamond', serif;
+            font-size: 14px;
+            color: #3d3d3a;
+            transition: border 0.2s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #8b7355;
+            background: white;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        button {
+            padding: 14px 28px;
+            background: #3d3d3a;
+            color: white;
+            border: none;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Garamond', serif;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            align-self: center;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background: #2c2c2a;
+        }
+        
+        .success-message {
+            display: none;
+            background: #e8f5e9;
+            border: 1px solid #81c784;
+            color: #2e7d32;
+            padding: 20px;
+            border-radius: 3px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .success-message.show {
+            display: block;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 60px 20px;
+            color: #8b7355;
+            font-size: 14px;
+            border-top: 1px solid #e5ddd2;
+            margin-top: 60px;
+        }
+        
+        @media (max-width: 600px) {
+            h1 { font-size: 36px; }
+            section { padding: 40px 20px; }
+            .info-grid { grid-template-columns: 1fr; gap: 30px; }
+            .lang-toggle { top: 10px; right: 10px; gap: 5px; }
+            .lang-toggle button { padding: 6px 10px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="lang-toggle">
+        <button class="active" id="btnEs" onclick="switchLang('es')">Español</button>
+        <button id="btnFr" onclick="switchLang('fr')">Français</button>
+    </div>
+
+    <header>
+        <div class="divider"></div>
+        <h1 id="titulo">Antonio & Noémie</h1>
+        <p class="subtitle" id="subtitle">Una celebración de amor</p>
+        <div class="divider"></div>
+        <p class="date-location" id="fecha-lugar">10 de julio de 2027 • El Puerto de Santa María</p>
+    </header>
+
+    <div class="container">
+        <!-- CEREMONIA -->
+        <section id="ceremonia-section">
+            <h2 id="h2-ceremonia">La Ceremonia</h2>
+            <div class="info-grid">
+                <div class="info-box">
+                    <span class="label" id="label-fecha">Fecha</span>
+                    <p class="value" id="val-fecha">10 de julio de 2027</p>
+                </div>
+                <div class="info-box">
+                    <span class="label" id="label-hora">Hora</span>
+                    <p class="value" id="val-hora">12:30 h</p>
+                </div>
+                <div class="info-box">
+                    <span class="label" id="label-lugar">Lugar</span>
+                    <p class="value" id="val-lugar">Parroquia de San Francisco<br><small style="font-size: 13px;">C/ San Francisco 27</small></p>
+                </div>
+                <div class="info-box">
+                    <span class="label" id="label-tipo">Celebración</span>
+                    <p class="value" id="val-tipo">Misa completa</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- RECEPCIÓN -->
+        <section id="recepcion-section">
+            <h2 id="h2-recepcion">La Recepción</h2>
+            <div class="info-grid">
+                <div class="info-box">
+                    <span class="label" id="label-aperitivo">Aperitivo</span>
+                    <p class="value" id="val-aperitivo">Castillo de San Marcos<br><small style="font-size: 13px;">Patio de la Mezquita</small></p>
+                </div>
+                <div class="info-box">
+                    <span class="label" id="label-banquete">Banquete</span>
+                    <p class="value" id="val-banquete">Castillo de San Marcos<br><small style="font-size: 13px;">Bodega</small></p>
+                </div>
+            </div>
+        </section>
+
+        <!-- RSVP -->
+        <section id="rsvp-section">
+            <h2 id="h2-rsvp">Confirma tu asistencia</h2>
+            
+            <form id="formRSVP" onsubmit="handleRSVP(event)">
+                <div class="form-group">
+                    <label id="label-nombre" for="nombre">Tu nombre *</label>
+                    <input type="text" id="nombre" name="nombre" required>
+                </div>
+
+                <div class="form-group">
+                    <label id="label-asistencia" for="asistencia">¿Asistirás? *</label>
+                    <select id="asistencia" name="asistencia" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="si" id="opt-si">Sí, ¡estaré allí!</option>
+                        <option value="no" id="opt-no">Lamentablemente, no puedo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label id="label-acompanantes" for="acompanantes">Número de acompañantes</label>
+                    <input type="number" id="acompanantes" name="acompanantes" min="0" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label id="label-alergias" for="alergias">Alergias o intolerancias</label>
+                    <textarea id="alergias" name="alergias" placeholder="Ej: gluten, lactosa..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label id="label-transporte" for="transporte">¿Necesitas transporte iglesia → Castillo?</label>
+                    <select id="transporte" name="transporte">
+                        <option value="no" id="opt-transporte-no">No, gracias</option>
+                        <option value="si" id="opt-transporte-si">Sí, por favor</option>
+                    </select>
+                </div>
+
+                <button type="submit" id="btn-submit">Enviar RSVP</button>
+                
+                <div class="success-message" id="successMsg">
+                    <strong id="msg-titulo">¡Gracias!</strong> <span id="msg-texto">Tu confirmación ha sido registrada.</span>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <footer id="footer">Una celebración de amor en el Castillo de San Marcos</footer>
+
+    <script>
+        const textos = {
+            es: {
+                titulo: "Antonio & Noémie",
+                subtitle: "Una celebración de amor",
+                'fecha-lugar': "10 de julio de 2027 • El Puerto de Santa María",
+                'h2-ceremonia': "La Ceremonia",
+                'label-fecha': "Fecha",
+                'val-fecha': "10 de julio de 2027",
+                'label-hora': "Hora",
+                'val-hora': "12:30 h",
+                'label-lugar': "Lugar",
+                'val-lugar': "Parroquia de San Francisco<br><small style=\"font-size: 13px;\">C/ San Francisco 27</small>",
+                'label-tipo': "Celebración",
+                'val-tipo': "Misa completa",
+                'h2-recepcion': "La Recepción",
+                'label-aperitivo': "Aperitivo",
+                'val-aperitivo': "Castillo de San Marcos<br><small style=\"font-size: 13px;\">Patio de la Mezquita</small>",
+                'label-banquete': "Banquete",
+                'val-banquete': "Castillo de San Marcos<br><small style=\"font-size: 13px;\">Bodega</small>",
+                'h2-rsvp': "Confirma tu asistencia",
+                'label-nombre': "Tu nombre *",
+                'label-asistencia': "¿Asistirás? *",
+                'opt-si': "Sí, ¡estaré allí!",
+                'opt-no': "Lamentablemente, no puedo",
+                'label-acompanantes': "Número de acompañantes",
+                'label-alergias': "Alergias o intolerancias",
+                'label-transporte': "¿Necesitas transporte iglesia → Castillo?",
+                'opt-transporte-no': "No, gracias",
+                'opt-transporte-si': "Sí, por favor",
+                'btn-submit': "Enviar RSVP",
+                'msg-titulo': "¡Gracias!",
+                'msg-texto': "Tu confirmación ha sido registrada.",
+                'footer': "Una celebración de amor en el Castillo de San Marcos"
+            },
+            fr: {
+                titulo: "Antonio & Noémie",
+                subtitle: "Une célébration d'amour",
+                'fecha-lugar': "10 juillet 2027 • El Puerto de Santa María",
+                'h2-ceremonia': "La Cérémonie",
+                'label-fecha': "Date",
+                'val-fecha': "10 juillet 2027",
+                'label-hora': "Heure",
+                'val-hora': "12h30",
+                'label-lugar': "Lieu",
+                'val-lugar': "Paroisse de San Francisco<br><small style=\"font-size: 13px;\">C/ San Francisco 27</small>",
+                'label-tipo': "Célébration",
+                'val-tipo': "Messe complète",
+                'h2-recepcion': "La Réception",
+                'label-aperitivo': "Apéritif",
+                'val-aperitivo': "Château de San Marcos<br><small style=\"font-size: 13px;\">Patio de la Mosquée</small>",
+                'label-banquete': "Banquet",
+                'val-banquete': "Château de San Marcos<br><small style=\"font-size: 13px;\">Bodega</small>",
+                'h2-rsvp': "Confirmez votre présence",
+                'label-nombre': "Votre nom *",
+                'label-asistencia': "Allez-vous assister ? *",
+                'opt-si': "Oui, je serai là !",
+                'opt-no': "Malheureusement, je ne peux pas",
+                'label-acompanantes': "Nombre d'accompagnateurs",
+                'label-alergias': "Allergies ou intolérances",
+                'label-transporte': "Avez-vous besoin de transport église → Château ?",
+                'opt-transporte-no': "Non, merci",
+                'opt-transporte-si': "Oui, s'il vous plaît",
+                'btn-submit': "Envoyer RSVP",
+                'msg-titulo': "Merci !",
+                'msg-texto': "Votre confirmation a été enregistrée.",
+                'footer': "Une célébration d'amour au Château de San Marcos"
+            }
+        };
+
+        let idiomaActual = 'es';
+
+        function switchLang(lang) {
+            idiomaActual = lang;
+            document.getElementById('btnEs').classList.toggle('active', lang === 'es');
+            document.getElementById('btnFr').classList.toggle('active', lang === 'fr');
+            
+            Object.keys(textos[lang]).forEach(key => {
+                const elem = document.getElementById(key);
+                if (elem) elem.innerHTML = textos[lang][key];
+            });
+        }
+
+        function handleRSVP(event) {
+            event.preventDefault();
+            
+            const formData = {
+                nombre: document.getElementById('nombre').value,
+                asistencia: document.getElementById('asistencia').value,
+                acompanantes: document.getElementById('acompanantes').value,
+                alergias: document.getElementById('alergias').value,
+                transporte: document.getElementById('transporte').value,
+                idioma: idiomaActual,
+                timestamp: new Date().toLocaleString('es-ES')
+            };
+            
+            console.log("RSVP:", formData);
+            
+            // URL de Google Apps Script
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzQ5KraRJP3wMazm-C5bcVXXFL0-pEaalRAxH52sV8HjoqyQcZws6OTrlzC4uZzXPKdnA/exec';
+            
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(res => {
+                document.getElementById('formRSVP').style.display = 'none';
+                document.getElementById('successMsg').classList.add('show');
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Hubo un error. Por favor, intenta de nuevo.');
+            });
+        }
+    </script>
+</body>
+</html>
